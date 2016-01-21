@@ -18,7 +18,11 @@ class EasyPythonMutagenComponentTests(unittest.TestCase):
         # copy test media to the directory
         if not os.path.exists('./test/media/flac.flac'):
             raise RuntimeError('could not find test media.')
-        for file in os.listdir('./test/media'):
+            
+        testfiles = ['flac.flac', 'm4a128.m4a', 'm4a16.m4a', 'm4a224.m4a', 'mp3_avgb128.mp3', 
+            'mp3_avgb16.mp3', 'mp3_avgb224.mp3', 'mp3_cnsb128.mp3', 'mp3_cnsb16.mp3', 'mp3_cnsb224.mp3',
+            'ogg_01.ogg', 'ogg_10.ogg']
+        for file in testfiles:
             shutil.copy('./test/media/'+file, self.tmpdir+'/'+file)
 
     def tearDown(self):
@@ -126,6 +130,7 @@ class EasyPythonMutagenComponentTests(unittest.TestCase):
             obj = EasyPythonMutagen(tmpdirsl+file)
             for field in fields:
                 self.assertEqual(unicode(fields[field]), obj.get(field))
+
 
 if __name__ == '__main__':
     unittest.main()
