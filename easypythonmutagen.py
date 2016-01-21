@@ -11,7 +11,7 @@ class EasyPythonMutagen(object):
     pass
 
 class EasyPythonMutagenFlac(object):
-    ''' An interface like EasyId3, but for Flac files.'''
+    '''An interface like EasyId3, but for Flac files.'''
     
     def __init__(self, filename):
         from mutagen import flac
@@ -31,8 +31,7 @@ class EasyPythonMutagenFlac(object):
             'tracktotal': 'tracktotal',
             'date': 'date',
             'genre': 'genre',
-            'website': 'www',
-            }
+            'website': 'www'}
         
     def __getitem__(self, key):
         return self.obj[self.map[key]]
@@ -47,7 +46,7 @@ class EasyPythonMutagenFlac(object):
         self.obj.save()
         
 class EasyPythonMutagenOggVorbis(object):
-    ''' An interface like EasyId3, but for OggVorbis files.'''
+    '''An interface like EasyId3, but for OggVorbis files.'''
     
     def __init__(self, filename):
         from mutagen.oggvorbis import OggVorbis
@@ -62,8 +61,7 @@ class EasyPythonMutagenOggVorbis(object):
             'discnumber': 'discnumber',
             'composer': 'composer',
             'genre': 'genre',
-            'website': 'www',
-            }
+            'website': 'www'}
         
     def __getitem__(self, key):
         return self.obj[self.map[key]]
@@ -94,7 +92,106 @@ class EasyPythonMutagenM4a(easymp4.EasyMP4):
         easymp4.EasyMP4Tags.RegisterTextKey('desc', b'desc')
         easymp4.EasyMP4Tags.RegisterTextKey('website', b'----:com.apple.iTunes:WWW')
 
+class EasyPythonMutagenId3(object):
+    '''like EasyId3, but supports id3_v23 and handles missing tags more gracefully.'''
+    def __init__(self, filename, use_id3_v23, keep_id3_v1=False):
+        self.obj = None
+        self.filename = filename
+        self.use_id3_v23 = use_id3_v23
+        self.keep_id3_v1 = keep_id3_v1
+        self.map = {
+            'album': 'TALB',
+            'bpm': 'TBPM',
+            'composer': 'TCOM',
+            'copyright': 'TCOP',
+            'encodedby': 'TENC',
+            'lyricist': 'TEXT',
+            'length': 'TLEN',
+            'media': 'TMED',
+            'mood': 'TMOO',
+            'title': 'TIT2',
+            'version': 'TIT3',
+            'artist': 'TPE1',
+            'performer': 'TPE2',
+            'conductor': 'TPE3',
+            'arranger': 'TPE4',
+            'discnumber': 'TPOS',
+            'organization': 'TPUB',
+            'tracknumber': 'TRCK',
+            'author': 'TOLY',
+            'isrc': 'TSRC',
+            'discsubtitle': 'TSST',
+            'language': 'TLAN',
+            # handled separately
+            'website': None, 
+            # aliases
+            'comment': 'TIT3',
+            'albumartist': 'TPE2'}
+
+        try:
+            self._load()
+        except mutagen.id3._util.ID3NoHeaderError:
+            # the id3 tag doesn't exist yet; let's just add it now.
+            self.obj = id3.ID3()
+            self['title'] = ''
+            self.save()
+            self._load()
+            
+    def _load(self):
+        from mutagen import id3
+        self.obj = id3.ID3()
+        kwargs = dict(v2_version=3, translate=True) if self.use_id3_v23 else dict()
+        self.obj.load(self.filename, **kwargs)
+            
+    def save(self):
+        kwargs = dict(v2_version=3) if self.use_id3_v23 else dict()
+        self.obj.save(self.filename, v1=self.keep_id3_v1, **kwargs)
+
+    def getWebsite(self):
+        urls = [frame.url for frame in self.obj.getall('WOAR')]
+        if urls:
+            return urls
+        else:
+            raise KeyError('website')
+            
+    def setWebsite(self, value):
+        self.obj.delall('WOAR')
+        if isinstance(value, basestring):
+            self.obj.add(mutagen.id3.WOAR(url=value))
+        else:
+            for v in value:
+                self.obj.add(mutagen.id3.WOAR(url=v))
+        
+    def __getitem__(self, key):
+        if key=='website':
+            return self.getWebsite()
+        else:
+            frameid = self.map[key]
+            return list(self.obj[frameid])
+            
+    def __setitem__(self, key, val):
+        if key=='website':
+            return self.setWebsite(val)
+        else:
+            frameid = self.map[key]
+            encoding = 3 #Encoding.UTF8; mutagen apparently converts to UTF16 when needed
+            try:
+                frame = self.obj[frameid]
+            except KeyError:
+                self.obj.add(mutagen.id3.Frames[frameid](encoding=encoding, text=val))
+            else:
+                frame.encoding = encoding
+                frame.text = val
+        
+    def __contains__(self, key):
+        try:
+            self[key]
+            return True
+        except KeyError: 
+            return False
+
 def getAudioDuration(filename, alreadyobj=None):
+    """returns audio duration in seconds"""
     filenamelower = filename.lower()
     if filenamelower.endswith('.mp3'):
         from mutagen.mp3 import MP3
@@ -129,4 +226,10 @@ def getAudioDuration(filename, alreadyobj=None):
         
     return length
 
-
+def getEmpiricalBitrate(filename, alreadyobj=None):
+    """returns the "empirical" bitrate, as opposed to the "stated" bitrate that can be inaccurate"""
+    
+    duration = getAudioDuration(filename, alreadyobj)
+    return (8.0*os.path.getsize(filename)/1000.0) / duration
+    
+    
