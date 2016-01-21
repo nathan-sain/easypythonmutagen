@@ -101,6 +101,7 @@ class _EasyPythonMutagenOggVorbis(object):
             'discnumber': 'discnumber',
             'composer': 'composer',
             'genre': 'genre',
+            'description': 'description',
             'website': 'www'}
         
     def __getitem__(self, key):

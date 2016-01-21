@@ -98,6 +98,8 @@ class EasyPythonMutagenComponentTests(unittest.TestCase):
                 composer=1, discnumber=1, tracknumber=1, albumartist=1, website=1)
             obj = EasyPythonMutagen(tmpdirsl+file)
             self.assertRaises(KeyError, lambda: obj.get('composer'))
+            if not file.endswith('.mp3'):
+                fields['description'] = 1
             
             # we shouldn't be able to set invalid fields
             if '.m4a' in file:
