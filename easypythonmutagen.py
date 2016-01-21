@@ -1,9 +1,13 @@
 
 import os
-import shutil
 import mutagen
 from mutagen import easymp4
 
+# A simple Mutagen wrapper.
+# o = EasyPythonMutagen('file.mp3')
+# o.set('title', 'song title')
+# o.save()
+#
 # tags are intentionally restricted; otherwise a typo like o['aartist'] would succeed silently in some formats.
 # use Mutagen directly if you want to intentionally add rare or custom fields.
 
@@ -129,6 +133,7 @@ class _EasyPythonMutagenM4a(easymp4.EasyMP4):
 class EasyPythonMutagenId3(object):
     '''like EasyId3, but supports id3_v23 and handles missing tags more gracefully.'''
     def __init__(self, filename, use_id3_v23, keep_id3_v1=False):
+        from mutagen import id3
         self.obj = None
         self.filename = filename
         self.use_id3_v23 = use_id3_v23
