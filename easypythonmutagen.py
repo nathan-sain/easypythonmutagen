@@ -8,6 +8,8 @@ from mutagen import easymp4
 # o.set('title', 'song title')
 # o.save()
 #
+# by Ben Fisher, https://github.com/downpoured/easypythonmutagen
+#
 # tags are intentionally restricted; otherwise a typo like o['aartist'] would succeed silently in some formats.
 # use Mutagen directly if you want to intentionally add rare or custom fields.
 
@@ -231,7 +233,7 @@ class EasyPythonMutagenId3(object):
         except KeyError: 
             return False
 
-def getAudioDuration(filename, alreadyobj=None):
+def get_audio_duration(filename, alreadyobj=None):
     """returns audio duration in seconds"""
     filenamelower = filename.lower()
     if filenamelower.endswith('.mp3'):
@@ -267,10 +269,10 @@ def getAudioDuration(filename, alreadyobj=None):
         
     return length
 
-def getEmpiricalBitrate(filename, alreadyobj=None):
+def get_empirical_bitrate(filename, alreadyobj=None):
     """returns the "empirical" bitrate, as opposed to the "stated" bitrate that can be inaccurate"""
     
-    duration = getAudioDuration(filename, alreadyobj)
+    duration = get_audio_duration(filename, alreadyobj)
     return (8.0*os.path.getsize(filename)/1000.0) / duration
     
     

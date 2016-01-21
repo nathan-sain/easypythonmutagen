@@ -2,7 +2,7 @@
 import os
 import shutil
 import unittest
-from easypythonmutagen import EasyPythonMutagen, getAudioDuration, getEmpiricalBitrate
+from easypythonmutagen import EasyPythonMutagen, get_audio_duration, get_empirical_bitrate
 
 
 class EasyPythonMutagenComponentTests(unittest.TestCase):
@@ -28,43 +28,43 @@ class EasyPythonMutagenComponentTests(unittest.TestCase):
     def test_lengthAndBitrate(self):
         # get duration; no tag object provided
         tmpdirsl = self.tmpdir+'/'
-        self.assertEqual(1023, int(1000*getAudioDuration(tmpdirsl+'flac.flac')))
-        self.assertEqual(1160, int(1000*getAudioDuration(tmpdirsl+'m4a16.m4a')))
-        self.assertEqual(1091, int(1000*getAudioDuration(tmpdirsl+'m4a128.m4a')))
-        self.assertEqual(1091, int(1000*getAudioDuration(tmpdirsl+'m4a224.m4a')))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_avgb16.mp3')))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_avgb128.mp3')))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_avgb224.mp3')))
-        self.assertEqual(2873, int(1000*getAudioDuration(tmpdirsl+'mp3_cnsb16.mp3')))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_cnsb128.mp3')))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_cnsb224.mp3')))
-        self.assertEqual(1591, int(1000*getAudioDuration(tmpdirsl+'ogg_01.ogg')))
-        self.assertEqual(1591, int(1000*getAudioDuration(tmpdirsl+'ogg_10.ogg')))
+        self.assertEqual(1023, int(1000*get_audio_duration(tmpdirsl+'flac.flac')))
+        self.assertEqual(1160, int(1000*get_audio_duration(tmpdirsl+'m4a16.m4a')))
+        self.assertEqual(1091, int(1000*get_audio_duration(tmpdirsl+'m4a128.m4a')))
+        self.assertEqual(1091, int(1000*get_audio_duration(tmpdirsl+'m4a224.m4a')))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_avgb16.mp3')))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_avgb128.mp3')))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_avgb224.mp3')))
+        self.assertEqual(2873, int(1000*get_audio_duration(tmpdirsl+'mp3_cnsb16.mp3')))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_cnsb128.mp3')))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_cnsb224.mp3')))
+        self.assertEqual(1591, int(1000*get_audio_duration(tmpdirsl+'ogg_01.ogg')))
+        self.assertEqual(1591, int(1000*get_audio_duration(tmpdirsl+'ogg_10.ogg')))
         
         # get duration; tag object provided
-        self.assertEqual(1023, int(1000*getAudioDuration(tmpdirsl+'flac.flac', EasyPythonMutagen(tmpdirsl+'flac.flac'))))
-        self.assertEqual(1160, int(1000*getAudioDuration(tmpdirsl+'m4a16.m4a', EasyPythonMutagen(tmpdirsl+'m4a16.m4a'))))
-        self.assertEqual(1091, int(1000*getAudioDuration(tmpdirsl+'m4a128.m4a', EasyPythonMutagen(tmpdirsl+'m4a128.m4a'))))
-        self.assertEqual(1091, int(1000*getAudioDuration(tmpdirsl+'m4a224.m4a', EasyPythonMutagen(tmpdirsl+'m4a224.m4a'))))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_avgb16.mp3', EasyPythonMutagen(tmpdirsl+'mp3_avgb16.mp3'))))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_avgb128.mp3', EasyPythonMutagen(tmpdirsl+'mp3_avgb128.mp3'))))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_avgb224.mp3', EasyPythonMutagen(tmpdirsl+'mp3_avgb224.mp3'))))
-        self.assertEqual(2873, int(1000*getAudioDuration(tmpdirsl+'mp3_cnsb16.mp3', EasyPythonMutagen(tmpdirsl+'mp3_cnsb16.mp3'))))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_cnsb128.mp3', EasyPythonMutagen(tmpdirsl+'mp3_cnsb128.mp3'))))
-        self.assertEqual(2773, int(1000*getAudioDuration(tmpdirsl+'mp3_cnsb224.mp3', EasyPythonMutagen(tmpdirsl+'mp3_cnsb224.mp3'))))
-        self.assertEqual(1591, int(1000*getAudioDuration(tmpdirsl+'ogg_01.ogg', EasyPythonMutagen(tmpdirsl+'ogg_01.ogg'))))
-        self.assertEqual(1591, int(1000*getAudioDuration(tmpdirsl+'ogg_10.ogg', EasyPythonMutagen(tmpdirsl+'ogg_10.ogg'))))
+        self.assertEqual(1023, int(1000*get_audio_duration(tmpdirsl+'flac.flac', EasyPythonMutagen(tmpdirsl+'flac.flac'))))
+        self.assertEqual(1160, int(1000*get_audio_duration(tmpdirsl+'m4a16.m4a', EasyPythonMutagen(tmpdirsl+'m4a16.m4a'))))
+        self.assertEqual(1091, int(1000*get_audio_duration(tmpdirsl+'m4a128.m4a', EasyPythonMutagen(tmpdirsl+'m4a128.m4a'))))
+        self.assertEqual(1091, int(1000*get_audio_duration(tmpdirsl+'m4a224.m4a', EasyPythonMutagen(tmpdirsl+'m4a224.m4a'))))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_avgb16.mp3', EasyPythonMutagen(tmpdirsl+'mp3_avgb16.mp3'))))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_avgb128.mp3', EasyPythonMutagen(tmpdirsl+'mp3_avgb128.mp3'))))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_avgb224.mp3', EasyPythonMutagen(tmpdirsl+'mp3_avgb224.mp3'))))
+        self.assertEqual(2873, int(1000*get_audio_duration(tmpdirsl+'mp3_cnsb16.mp3', EasyPythonMutagen(tmpdirsl+'mp3_cnsb16.mp3'))))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_cnsb128.mp3', EasyPythonMutagen(tmpdirsl+'mp3_cnsb128.mp3'))))
+        self.assertEqual(2773, int(1000*get_audio_duration(tmpdirsl+'mp3_cnsb224.mp3', EasyPythonMutagen(tmpdirsl+'mp3_cnsb224.mp3'))))
+        self.assertEqual(1591, int(1000*get_audio_duration(tmpdirsl+'ogg_01.ogg', EasyPythonMutagen(tmpdirsl+'ogg_01.ogg'))))
+        self.assertEqual(1591, int(1000*get_audio_duration(tmpdirsl+'ogg_10.ogg', EasyPythonMutagen(tmpdirsl+'ogg_10.ogg'))))
         
         # get empirical bitrate
-        self.assertEqual(29, int(getEmpiricalBitrate(tmpdirsl+'m4a16.m4a')))
-        self.assertEqual(136, int(getEmpiricalBitrate(tmpdirsl+'mp3_avgb128.mp3')))
-        self.assertEqual(233, int(getEmpiricalBitrate(tmpdirsl+'mp3_cnsb224.mp3')))
+        self.assertEqual(29, int(get_empirical_bitrate(tmpdirsl+'m4a16.m4a')))
+        self.assertEqual(136, int(get_empirical_bitrate(tmpdirsl+'mp3_avgb128.mp3')))
+        self.assertEqual(233, int(get_empirical_bitrate(tmpdirsl+'mp3_cnsb224.mp3')))
         
         # unsupported extensions
-        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:getAudioDuration('missing_extension'))
-        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:getAudioDuration('unsupported.mp3.extension.mp5'))
-        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:getEmpiricalBitrate('missing_extension'))
-        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:getEmpiricalBitrate('unsupported.mp3.extension.mp5'))
+        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:get_audio_duration('missing_extension'))
+        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:get_audio_duration('unsupported.mp3.extension.mp5'))
+        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:get_empirical_bitrate('missing_extension'))
+        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:get_empirical_bitrate('unsupported.mp3.extension.mp5'))
     
     def test_metadataTags(self):
         # saving in id3_23 should be different than saving in id3_24
