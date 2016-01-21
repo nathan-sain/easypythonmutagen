@@ -25,7 +25,6 @@ class EasyPythonMutagenComponentTests(unittest.TestCase):
         if 'testeasypythonmutagen' in self.tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
     
-    
     def test_lengthAndBitrate(self):
         # get duration; no tag object provided
         tmpdirsl = self.tmpdir+'/'
@@ -66,10 +65,67 @@ class EasyPythonMutagenComponentTests(unittest.TestCase):
         self.assertRaisesRegexp(ValueError, 'unsupported', lambda:getAudioDuration('unsupported.mp3.extension.mp5'))
         self.assertRaisesRegexp(ValueError, 'unsupported', lambda:getEmpiricalBitrate('missing_extension'))
         self.assertRaisesRegexp(ValueError, 'unsupported', lambda:getEmpiricalBitrate('unsupported.mp3.extension.mp5'))
+    
+    def test_metadataTags(self):
+        # saving in id3_23 should be different than saving in id3_24
+        import filecmp
+        tmpdirsl = self.tmpdir+'/'
+        shutil.copy(tmpdirsl+'mp3_avgb128.mp3', tmpdirsl+'mp3_id3_23.mp3')
+        shutil.copy(tmpdirsl+'mp3_avgb128.mp3', tmpdirsl+'mp3_id3_24.mp3')
+        self.assertTrue(filecmp.cmp(tmpdirsl+'mp3_id3_23.mp3', tmpdirsl+'mp3_id3_24.mp3', shallow=False))
+        o23 = EasyPythonMutagen(tmpdirsl+'mp3_id3_23.mp3', True)
+        o23.set('title', 'test')
+        o23.save()
+        o24 = EasyPythonMutagen(tmpdirsl+'mp3_id3_24.mp3', False)
+        o24.set('title', 'test')
+        o24.save()
+        self.assertFalse(filecmp.cmp(tmpdirsl+'mp3_id3_23.mp3', tmpdirsl+'mp3_id3_24.mp3', shallow=False))
         
-
-# expect KeyError
-# or mutagen.easymp4.EasyMP4KeyError
+        # unsupported extensions
+        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:EasyPythonMutagen('missing_extension'))
+        self.assertRaisesRegexp(ValueError, 'unsupported', lambda:EasyPythonMutagen('unsupported.mp3.extension.mp5'))
+        
+        # test reading and writing
+        for file in os.listdir(self.tmpdir):
+            if 'id3' in file:
+                continue
+                
+            fields = dict(album=1, comment=1, artist=1, title=1, 
+                composer=1, discnumber=1, tracknumber=1, albumartist=1, website=1)
+            obj = EasyPythonMutagen(tmpdirsl+file)
+            self.assertRaises(KeyError, lambda: obj.get('composer'))
+            
+            # we shouldn't be able to set invalid fields
+            if '.m4a' in file:
+                # workaround for mutagen bug easymp4.py, line 183,  __getitem__ when it fails to raise EasyMP4KeyError("%r is not a valid key" % key)
+                self.assertRaisesRegexp(Exception, '(not a valid key)|(object is not callable)', lambda: obj.set('aartist', 'test'))
+                self.assertRaisesRegexp(Exception, '(not a valid key)|(object is not callable)', lambda: obj.get('aartist'))
+            else:
+                self.assertRaises(KeyError, lambda: obj.set('aartist', 'test'))
+                self.assertRaises(KeyError, lambda: obj.get('aartist'))
+            
+            for field in fields:
+                # first, all fields should be empty
+                self.assertEqual(None, obj.get_or_default(field, None))
+                
+                # then, put data into the field
+                if field=='tracknumber':
+                    val = 14
+                elif field=='discnumber':
+                    val = 7
+                elif field=='website':
+                    val = 'http://website'+field
+                else:
+                    val = u'test\u0107test\u1101'+field
+                fields[field] = val
+                obj.set(field, val)
+                self.assertEqual(unicode(fields[field]), obj.get(field))
+            
+            # verify data was saved
+            obj.save()
+            obj = EasyPythonMutagen(tmpdirsl+file)
+            for field in fields:
+                self.assertEqual(unicode(fields[field]), obj.get(field))
 
 if __name__ == '__main__':
     unittest.main()
