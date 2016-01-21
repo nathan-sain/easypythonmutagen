@@ -4,13 +4,47 @@ import shutil
 import mutagen
 from mutagen import easymp4
 
-# tags are intentionally restricted; otherwise a typo like o['aartist'] would succeed silently.
+# tags are intentionally restricted; otherwise a typo like o['aartist'] would succeed silently in some formats.
 # use Mutagen directly if you want to intentionally add rare or custom fields.
 
 class EasyPythonMutagen(object):
-    pass
+    """Wraps interfaces, for convenience, will not return values as list."""
+    def __init__(self, filename, use_id3_v23=True):
+        filenamelower = filename.lower()
+        if filenamelower.endswith('.mp3'):
+            self.obj = EasyPythonMutagenId3(filename, use_id3_v23=use_id3_v23)
+        elif filenamelower.endswith('.ogg'):
+            self.obj = _EasyPythonMutagenOggVorbis(filename)
+        elif filenamelower.endswith('.flac'):
+            self.obj = _EasyPythonMutagenFlac(filename)
+        elif filenamelower.endswith('.mp4') or filenamelower.endswith('.m4a'):
+            self.obj = _EasyPythonMutagenM4a(filename)
+        else:
+            raise ValueError('unsupported extension')
+        
+    def get(self, fieldname):
+        ret = self.obj[fieldname]
+        if not ret or isinstance(ret, basestring):
+            return ret
+        else:
+            return ret[0]
+        
+    def get_or_default(self, fieldname, default):
+        try:
+            return self.get(fieldname)
+        except KeyError, mutagen.easymp4.EasyMP4KeyError:
+            return default
+        
+    def set(self, fieldname, val):
+        if isinstance(val, int):
+            val = str(val)
+        self.obj[fieldname] = val
+        
+    def save(self):
+        self.obj.save()
 
-class EasyPythonMutagenFlac(object):
+
+class _EasyPythonMutagenFlac(object):
     '''An interface like EasyId3, but for Flac files.'''
     
     def __init__(self, filename):
@@ -45,7 +79,7 @@ class EasyPythonMutagenFlac(object):
     def save(self):
         self.obj.save()
         
-class EasyPythonMutagenOggVorbis(object):
+class _EasyPythonMutagenOggVorbis(object):
     '''An interface like EasyId3, but for OggVorbis files.'''
     
     def __init__(self, filename):
@@ -75,7 +109,7 @@ class EasyPythonMutagenOggVorbis(object):
     def save(self):
         self.obj.save()
         
-class EasyPythonMutagenM4a(easymp4.EasyMP4):
+class _EasyPythonMutagenM4a(easymp4.EasyMP4):
     '''EasyMp4, with added fields.
         EasyMp4 already provides
         title
@@ -87,7 +121,7 @@ class EasyPythonMutagenM4a(easymp4.EasyMP4):
         genre, and more'''
     
     def __init__(self, filename):
-        super(EasyPythonMutagenM4a, self).__init__(filename)
+        super(_EasyPythonMutagenM4a, self).__init__(filename)
         easymp4.EasyMP4Tags.RegisterTextKey('composer', b'\xa9wrt')
         easymp4.EasyMP4Tags.RegisterTextKey('desc', b'desc')
         easymp4.EasyMP4Tags.RegisterTextKey('website', b'----:com.apple.iTunes:WWW')
@@ -145,7 +179,9 @@ class EasyPythonMutagenId3(object):
             
     def save(self):
         kwargs = dict(v2_version=3) if self.use_id3_v23 else dict()
-        self.obj.save(self.filename, v1=self.keep_id3_v1, **kwargs)
+        if not self.keep_id3_v1:
+            kwargs['v1'] = 0
+        self.obj.save(self.filename, **kwargs)
 
     def getWebsite(self):
         urls = [frame.url for frame in self.obj.getall('WOAR')]
@@ -208,21 +244,21 @@ def getAudioDuration(filename, alreadyobj=None):
     elif filenamelower.endswith('.flac'):
         if isinstance(alreadyobj, EasyPythonMutagen):
             length = alreadyobj.obj.obj.info.length
-        elif isinstance(alreadyobj, EasyPythonMutagenFlac):
+        elif isinstance(alreadyobj, _EasyPythonMutagenFlac):
             length = alreadyobj.obj.info.length
         else:
-            length = EasyPythonMutagenFlac(filename).obj.info.length
+            length = _EasyPythonMutagenFlac(filename).obj.info.length
             
     elif filenamelower.endswith('.ogg'):
         if isinstance(alreadyobj, EasyPythonMutagen):
             length = alreadyobj.obj.obj.info.length
-        elif isinstance(alreadyobj, EasyPythonMutagenOggVorbis):
+        elif isinstance(alreadyobj, _EasyPythonMutagenOggVorbis):
             length = alreadyobj.obj.info.length
         else:
-            length = EasyPythonMutagenOggVorbis(filename).obj.info.length
+            length = _EasyPythonMutagenOggVorbis(filename).obj.info.length
 
     else:
-        return ValueError('unsupported extension')
+        raise ValueError('unsupported extension')
         
     return length
 
